@@ -14,13 +14,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://acachete.xyz"),
   title: "Acachete Labs",
   description:
     "A research-grade software laboratory. Protocol utilities, real-world asset infrastructure, and AI systems.",
+  icons: {
+    icon: "/AcacheteLabs.png",
+    apple: "/AcacheteLabs.png",
+  },
   openGraph: {
+    title: "Acachete Labs",
+    siteName: "Acachete Labs",
+    description:
+      "A research-grade software laboratory. Protocol utilities, real-world asset infrastructure, and AI systems.",
+    type: "website",
+    images: ["/AcacheteLabs.png"],
+  },
+  twitter: {
+    card: "summary",
     title: "Acachete Labs",
     description:
       "A research-grade software laboratory. Protocol utilities, real-world asset infrastructure, and AI systems.",
+    images: ["/AcacheteLabs.png"],
   },
 };
 
