@@ -110,40 +110,32 @@ export function BlueprintGrid() {
     };
   }, [prefersReducedMotion]);
 
-  let lineIndex = 0;
-
   return (
     <div
       ref={containerRef}
       className="pointer-events-none fixed inset-0 z-0"
       aria-hidden="true"
     >
-      {horizontalPositions.map((pos) => {
-        const idx = lineIndex++;
-        return (
-          <div
-            key={`h-${pos}`}
-            ref={(el) => setLineRef(el, idx)}
-            data-orientation="h"
-            data-pos={pos}
-            className="bp-line absolute left-0 h-px w-full bg-line opacity-0"
-            style={{ top: `${pos}%` }}
-          />
-        );
-      })}
-      {verticalPositions.map((pos) => {
-        const idx = lineIndex++;
-        return (
-          <div
-            key={`v-${pos}`}
-            ref={(el) => setLineRef(el, idx)}
-            data-orientation="v"
-            data-pos={pos}
-            className="bp-line absolute top-0 h-full w-px bg-line opacity-0"
-            style={{ left: `${pos}%` }}
-          />
-        );
-      })}
+      {horizontalPositions.map((pos, i) => (
+        <div
+          key={`h-${pos}`}
+          ref={(el) => setLineRef(el, i)}
+          data-orientation="h"
+          data-pos={pos}
+          className="bp-line absolute left-0 h-px w-full bg-line opacity-0"
+          style={{ top: `${pos}%` }}
+        />
+      ))}
+      {verticalPositions.map((pos, i) => (
+        <div
+          key={`v-${pos}`}
+          ref={(el) => setLineRef(el, horizontalPositions.length + i)}
+          data-orientation="v"
+          data-pos={pos}
+          className="bp-line absolute top-0 h-full w-px bg-line opacity-0"
+          style={{ left: `${pos}%` }}
+        />
+      ))}
     </div>
   );
 }

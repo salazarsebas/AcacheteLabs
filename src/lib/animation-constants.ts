@@ -33,6 +33,7 @@ export const PARTICLES = {
   turbulenceStrength: 60,
   sizeOscillation: 0.3,
   glowRadius: 4,
+  alphaThreshold: 128,
 } as const;
 
 export const SCANNER = {

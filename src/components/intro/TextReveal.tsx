@@ -25,8 +25,8 @@ export function TextReveal({
 }: TextRevealProps) {
   const internalRef = useRef<HTMLDivElement>(null);
   const textRef = externalContainerRef ?? internalRef;
-  const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const flashRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const charRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
+  const flashRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
   const triggeredRef = useRef<Set<number>>(new Set());
   const positionsRef = useRef<{ centerX: number }[]>([]);
 
@@ -38,7 +38,8 @@ export function TextReveal({
 
     // Wait a frame for layout to stabilize
     const rafId = requestAnimationFrame(() => {
-      positionsRef.current = charRefs.current.map((el) => {
+      positionsRef.current = characters.map((_, i) => {
+        const el = charRefs.current.get(i);
         if (!el) return { centerX: 0 };
         const rect = el.getBoundingClientRect();
         return { centerX: rect.left + rect.width / 2 };
@@ -62,8 +63,8 @@ export function TextReveal({
 
       triggeredRef.current.add(i);
 
-      const charEl = charRefs.current[i];
-      const flashEl = flashRefs.current[i];
+      const charEl = charRefs.current.get(i);
+      const flashEl = flashRefs.current.get(i);
       if (!charEl) return;
 
       const finalCenterX = positionsRef.current[i]?.centerX ?? 0;
@@ -151,7 +152,8 @@ export function TextReveal({
           <span key={i} className="relative inline-block">
             <span
               ref={(el) => {
-                charRefs.current[i] = el;
+                if (el) charRefs.current.set(i, el);
+                else charRefs.current.delete(i);
               }}
               className="inline-block"
               style={{
@@ -165,7 +167,8 @@ export function TextReveal({
             {/* Micro-flash element at base */}
             <span
               ref={(el) => {
-                flashRefs.current[i] = el;
+                if (el) flashRefs.current.set(i, el);
+                else flashRefs.current.delete(i);
               }}
               className="absolute bottom-0 left-1/2 h-[1px] w-full -translate-x-1/2 bg-white opacity-0"
               aria-hidden="true"

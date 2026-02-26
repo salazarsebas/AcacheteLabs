@@ -7,6 +7,7 @@ import { DURATIONS, EASINGS } from "@/lib/animation-constants";
 import { ScanningCanvas } from "./ScanningCanvas";
 import { TextReveal } from "./TextReveal";
 import { ParticleDisintegration } from "./ParticleDisintegration";
+import { CanvasErrorBoundary } from "@/components/ui/CanvasErrorBoundary";
 
 interface IntroSequenceProps {
   onComplete: () => void;
@@ -104,7 +105,9 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
       role="status"
       aria-label="Loading laboratory"
     >
-      <ScanningCanvas progress={scanProgress} active={showScan} />
+      <CanvasErrorBoundary>
+        <ScanningCanvas progress={scanProgress} active={showScan} />
+      </CanvasErrorBoundary>
 
       <TextReveal
         text={INTRO_TEXT}
@@ -113,11 +116,13 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
         containerRef={textContainerRef}
       />
 
-      <ParticleDisintegration
-        active={showParticles}
-        progress={fragmentProgress}
-        text={INTRO_TEXT}
-      />
+      <CanvasErrorBoundary>
+        <ParticleDisintegration
+          active={showParticles}
+          progress={fragmentProgress}
+          text={INTRO_TEXT}
+        />
+      </CanvasErrorBoundary>
     </div>
   );
 }

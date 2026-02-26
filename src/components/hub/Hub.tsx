@@ -39,8 +39,12 @@ export function Hub({ visible }: HubProps) {
     (p) => p.category === "infrastructure"
   );
 
-  // Stagger indices: publicGoods(0,1), flagship(2), infrastructure(3)
-  let staggerIdx = 0;
+  // Pre-compute stagger indices per category
+  const staggerOffsets = {
+    publicGoods: 0,
+    flagship: publicGoods.length,
+    infrastructure: publicGoods.length + flagship.length,
+  };
 
   return (
     <motion.section
@@ -59,62 +63,53 @@ export function Hub({ visible }: HubProps) {
     >
       <div className="grid w-full max-w-[1200px] grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
         {/* Public Goods row */}
-        {publicGoods.map((project) => {
-          const idx = staggerIdx++;
-          return (
-            <ProjectModule
-              key={project.id}
-              project={project}
-              depth={depthMap[project.id] ?? 1}
-              staggerIndex={idx}
-              hubVisible={visible}
-              isAnyHovered={hoveredModuleId !== null}
-              isSelfHovered={hoveredModuleId === project.id}
-              onHoverChange={(h) => handleHoverChange(project.id, h)}
-              reducedMotion={prefersReducedMotion}
-            />
-          );
-        })}
+        {publicGoods.map((project, i) => (
+          <ProjectModule
+            key={project.id}
+            project={project}
+            depth={depthMap[project.id] ?? 1}
+            staggerIndex={staggerOffsets.publicGoods + i}
+            hubVisible={visible}
+            isAnyHovered={hoveredModuleId !== null}
+            isSelfHovered={hoveredModuleId === project.id}
+            onHoverChange={(h) => handleHoverChange(project.id, h)}
+            reducedMotion={prefersReducedMotion}
+          />
+        ))}
 
         {/* Empty cell for desktop grid alignment */}
         <div className="hidden md:block" aria-hidden="true" />
 
         {/* Akkuea — spans 2 columns on desktop */}
-        {flagship.map((project) => {
-          const idx = staggerIdx++;
-          return (
-            <div key={project.id} className="md:col-span-2">
-              <ProjectModule
-                project={project}
-                depth={depthMap[project.id] ?? 1}
-                staggerIndex={idx}
-                hubVisible={visible}
-                isAnyHovered={hoveredModuleId !== null}
-                isSelfHovered={hoveredModuleId === project.id}
-                onHoverChange={(h) => handleHoverChange(project.id, h)}
-                reducedMotion={prefersReducedMotion}
-              />
-            </div>
-          );
-        })}
-
-        {/* PromptOS */}
-        {infrastructure.map((project) => {
-          const idx = staggerIdx++;
-          return (
+        {flagship.map((project, i) => (
+          <div key={project.id} className="md:col-span-2">
             <ProjectModule
-              key={project.id}
               project={project}
               depth={depthMap[project.id] ?? 1}
-              staggerIndex={idx}
+              staggerIndex={staggerOffsets.flagship + i}
               hubVisible={visible}
               isAnyHovered={hoveredModuleId !== null}
               isSelfHovered={hoveredModuleId === project.id}
               onHoverChange={(h) => handleHoverChange(project.id, h)}
               reducedMotion={prefersReducedMotion}
             />
-          );
-        })}
+          </div>
+        ))}
+
+        {/* PromptOS */}
+        {infrastructure.map((project, i) => (
+          <ProjectModule
+            key={project.id}
+            project={project}
+            depth={depthMap[project.id] ?? 1}
+            staggerIndex={staggerOffsets.infrastructure + i}
+            hubVisible={visible}
+            isAnyHovered={hoveredModuleId !== null}
+            isSelfHovered={hoveredModuleId === project.id}
+            onHoverChange={(h) => handleHoverChange(project.id, h)}
+            reducedMotion={prefersReducedMotion}
+          />
+        ))}
       </div>
     </motion.section>
   );

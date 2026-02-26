@@ -60,7 +60,6 @@ export function ParticleDisintegration({
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.letterSpacing = `${fontSize * 0.15}px`;
     ctx.fillText(text, width / 2, height / 2);
 
     // Sample pixels
@@ -78,7 +77,7 @@ export function ParticleDisintegration({
         const i = (y * canvas.width + x) * 4;
         const alpha = pixels[i + 3];
 
-        if (alpha > 128) {
+        if (alpha > PARTICLES.alphaThreshold) {
           const px = x / dpr;
           const py = y / dpr;
           const dx = px - centerX;
@@ -123,6 +122,17 @@ export function ParticleDisintegration({
     const dpr = window.devicePixelRatio || 1;
     const width = window.innerWidth;
     const height = window.innerHeight;
+
+    // Update canvas size if window was resized
+    const expectedWidth = width * dpr;
+    const expectedHeight = height * dpr;
+    if (canvas.width !== expectedWidth || canvas.height !== expectedHeight) {
+      canvas.width = expectedWidth;
+      canvas.height = expectedHeight;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.scale(dpr, dpr);
+    }
 
     ctx.clearRect(0, 0, width * dpr, height * dpr);
 
