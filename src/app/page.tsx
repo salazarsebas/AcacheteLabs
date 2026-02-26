@@ -4,6 +4,8 @@ import { BlueprintGrid } from "@/components/decorative/BlueprintGrid";
 import { CoordinateLabel } from "@/components/decorative/CoordinateLabel";
 import { CADMarker } from "@/components/decorative/CADMarker";
 import { MicroLabel } from "@/components/decorative/MicroLabel";
+import { FloatingParticles } from "@/components/decorative/FloatingParticles";
+import { WaveformSignal } from "@/components/decorative/WaveformSignal";
 import { IntroHubOrchestrator } from "@/components/hub/IntroHubOrchestrator";
 
 export default function Home() {
@@ -11,6 +13,8 @@ export default function Home() {
     <main className="relative min-h-screen bg-surface">
       <Header />
       <BlueprintGrid />
+      <FloatingParticles />
+      <WaveformSignal />
 
       {/* Corner indicators */}
       <CornerIndicator label="Calibration: Stable" position="top-right" />

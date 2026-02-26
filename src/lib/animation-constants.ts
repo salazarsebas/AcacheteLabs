@@ -50,3 +50,24 @@ export const GRID = {
   activeOpacity: 0.25,
   pulseAmplitude: 0.02,
 } as const;
+
+export const AMBIENT = {
+  particleCount: 60,
+  minSize: 0.8,
+  maxSize: 2,
+  minOpacity: 0.04,
+  maxOpacity: 0.12,
+  minSpeed: 0.1,
+  maxSpeed: 0.3,
+  driftAmplitude: 0.3,
+  driftFrequency: 0.5,
+} as const;
+
+export const WAVEFORM = {
+  amplitude: 15,
+  frequency: 0.015,
+  scrollSpeed: 0.4,
+  lineWidth: 0.5,
+  opacity: 0.06,
+  edgeOffset: 30,
+} as const;

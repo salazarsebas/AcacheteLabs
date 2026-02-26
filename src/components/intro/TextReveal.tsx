@@ -47,7 +47,7 @@ export function TextReveal({
     });
 
     return () => cancelAnimationFrame(rafId);
-  }, [visible]);
+  }, [visible, characters]);
 
   // Trigger letter walk animations based on scan progress
   useEffect(() => {
