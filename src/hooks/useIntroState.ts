@@ -5,7 +5,11 @@ import { useState, useCallback, useSyncExternalStore } from "react";
 const STORAGE_KEY = "acachete-intro-seen";
 
 function getSnapshot(): boolean {
-  return sessionStorage.getItem(STORAGE_KEY) === "true";
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
 }
 
 function getServerSnapshot(): boolean {
@@ -13,24 +17,45 @@ function getServerSnapshot(): boolean {
 }
 
 function subscribe(callback: () => void): () => void {
-  // sessionStorage doesn't have change events within the same tab,
-  // but we subscribe to storage events for completeness
   window.addEventListener("storage", callback);
   return () => window.removeEventListener("storage", callback);
 }
 
 export function useIntroState() {
-  const shouldSkip = useSyncExternalStore(
+  const hasSeenBefore = useSyncExternalStore(
     subscribe,
     getSnapshot,
     getServerSnapshot
   );
-  const [introComplete, setIntroComplete] = useState(shouldSkip);
+
+  const [introComplete, setIntroComplete] = useState(false);
+
+  const isFirstVisit = !hasSeenBefore;
+  const isReturnVisit = hasSeenBefore;
+
+  const [isReplaying, setIsReplaying] = useState(false);
 
   const completeIntro = useCallback(() => {
-    sessionStorage.setItem(STORAGE_KEY, "true");
+    try {
+      localStorage.setItem(STORAGE_KEY, "true");
+    } catch {
+      // localStorage might be unavailable in private browsing
+    }
     setIntroComplete(true);
+    setIsReplaying(false);
   }, []);
 
-  return { introComplete, shouldSkip, completeIntro };
+  const replayIntro = useCallback(() => {
+    setIntroComplete(false);
+    setIsReplaying(true);
+  }, []);
+
+  return {
+    introComplete,
+    isFirstVisit,
+    isReturnVisit,
+    isReplaying,
+    completeIntro,
+    replayIntro,
+  };
 }

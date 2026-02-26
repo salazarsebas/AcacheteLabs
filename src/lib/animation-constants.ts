@@ -1,14 +1,48 @@
+// === INTRO: Door (sliding panel) ===
+export const DOOR = {
+  restDisplace: 4,
+  openDisplace: 20,
+  expandDuration: 0.8,
+  seamGlowRest: 0.4,
+  seamGlowOpen: 0.9,
+} as const;
+
+// === INTRO: Letter Choreography ===
+export const LETTER = {
+  stagger: 0.18,
+  slideDuration: 0.45,
+  scanDuration: 0.4,
+  scanToSlideDelay: 0.1,
+  glowDuration: 0.3,
+  slideEase: "power2.out",
+} as const;
+
+// === INTRO: Micro-Detail Overlay ===
+export const MICRO_DETAIL = {
+  displayDuration: 0.18,
+  fadeDuration: 0.08,
+} as const;
+
+// === INTRO: Post-Animation ===
+export const POST_ANIM = {
+  holdDuration: 0.8,
+  zoomOutDuration: 1.0,
+  hubInitialScale: 1.08,
+} as const;
+
+// === INTRO: Compact (Return Visit) ===
+export const COMPACT = {
+  doorExpandDuration: 0.2,
+  stagger: 0.03,
+  slideDuration: 0.25,
+  fadeDuration: 0.2,
+} as const;
+
+// === Hub & Module Durations ===
 export const DURATIONS = {
-  scanLine: 2.5,
-  textReveal: 2.5,
-  hold: 1.5,
-  fragment: 1.7,
   hubFadeIn: 1.2,
   moduleHover: 0.6,
   overlayEnter: 0.3,
-  letterWalk: 0.6,
-  letterStagger: 0.12,
-  holdBreathing: 2.0,
   moduleStagger: 0.15,
   gridPulse: 4.0,
   cornerBlink: 3.0,
@@ -20,28 +54,7 @@ export const EASINGS = {
   smooth: "power2.inOut",
   enter: "power3.out",
   exit: "power2.in",
-  elastic: "elastic.out(1, 0.4)",
-} as const;
-
-export const PARTICLES = {
-  maxCount: 3000,
-  sampleInterval: 3,
-  dispersalRange: { x: 200, y: 150 },
-  minSize: 0.5,
-  trailLength: 4,
-  turbulenceScale: 0.003,
-  turbulenceStrength: 60,
-  sizeOscillation: 0.3,
-  glowRadius: 4,
-  alphaThreshold: 128,
-} as const;
-
-export const SCANNER = {
-  interferenceLines: 5,
-  jitterAmplitude: 1.5,
-  jitterFrequency: 12,
-  glowWidth: 40,
-  gridMarkerSize: 6,
+  cinematic: "power2.out",
 } as const;
 
 export const GRID = {

@@ -9,6 +9,8 @@ import { projects } from "@/data/projects";
 
 interface HubProps {
   visible: boolean;
+  revealMode: "instant" | "quick" | "cinematic";
+  onReplay?: () => void;
 }
 
 const depthMap: Record<string, number> = {
@@ -18,7 +20,7 @@ const depthMap: Record<string, number> = {
   promptos: 0.6,
 };
 
-export function Hub({ visible }: HubProps) {
+export function Hub({ visible, revealMode, onReplay }: HubProps) {
   const prefersReducedMotion = useReducedMotion();
   const [hoveredModuleId, setHoveredModuleId] = useState<string | null>(null);
 
@@ -49,15 +51,22 @@ export function Hub({ visible }: HubProps) {
   return (
     <motion.section
       id="hub"
-      initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
+      initial={
+        revealMode === "instant"
+          ? { opacity: 1, scale: 1 }
+          : { opacity: 0, scale: revealMode === "cinematic" ? 1.08 : 1.02 }
+      }
       animate={
         visible
-          ? { opacity: 1, y: 0 }
-          : prefersReducedMotion
-            ? { opacity: 0 }
-            : { opacity: 0, y: 20 }
+          ? { opacity: 1, scale: 1 }
+          : { opacity: 0, scale: revealMode === "cinematic" ? 1.08 : 1.02 }
       }
-      transition={{ duration: 1.2, ease: "easeInOut" }}
+      transition={{
+        duration:
+          revealMode === "cinematic" ? 1.0 : revealMode === "quick" ? 0.5 : 0,
+        ease: [0.25, 0.1, 0.25, 1.0],
+      }}
+      style={{ transformOrigin: "center center" }}
       className="relative flex min-h-screen flex-col items-center justify-center px-6 py-24 md:px-10"
       aria-label="Project laboratory"
     >
@@ -111,6 +120,17 @@ export function Hub({ visible }: HubProps) {
           />
         ))}
       </div>
+
+      {onReplay && (
+        <button
+          onClick={onReplay}
+          className="mt-16 font-mono text-[10px] uppercase tracking-[0.2em] transition-opacity duration-300 hover:opacity-40"
+          style={{ color: "rgba(255,255,255,0.12)" }}
+          aria-label="Replay intro animation"
+        >
+          Replay sequence
+        </button>
+      )}
     </motion.section>
   );
 }
