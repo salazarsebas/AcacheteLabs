@@ -27,8 +27,8 @@ export default function Home() {
       <CADMarker className="left-[75%] top-[80%]" />
 
       {/* Micro labels */}
-      <MicroLabel text="Layer 03" className="right-[15%] top-[35%]" />
-      <MicroLabel text="Node" className="left-[12%] bottom-[25%]" />
+      <MicroLabel text="Layer 03" className="right-[15%] top-[35%]" staggerIndex={0} />
+      <MicroLabel text="Node" className="left-[12%] bottom-[25%]" staggerIndex={1} />
 
       <IntroHubOrchestrator />
     </main>

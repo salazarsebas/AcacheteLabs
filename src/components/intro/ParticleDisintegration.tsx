@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react";
 import { PARTICLES } from "@/lib/animation-constants";
+import { turbulence } from "@/lib/noise";
 
 interface Particle {
   originX: number;
@@ -10,6 +11,9 @@ interface Particle {
   speed: number;
   drift: number;
   size: number;
+  distFromCenter: number;
+  trail: { x: number; y: number }[];
+  phaseOffset: number;
 }
 
 interface ParticleDisintegrationProps {
@@ -26,6 +30,12 @@ export function ParticleDisintegration({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const initializedRef = useRef(false);
+  const progressRef = useRef(progress);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
 
   const initParticles = useCallback(() => {
     const canvas = canvasRef.current;
@@ -61,6 +71,7 @@ export function ParticleDisintegration({
     const interval = PARTICLES.sampleInterval * dpr;
     const centerX = width / 2;
     const centerY = height / 2;
+    const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
 
     for (let y = 0; y < canvas.height; y += interval) {
       for (let x = 0; x < canvas.width; x += interval) {
@@ -72,6 +83,7 @@ export function ParticleDisintegration({
           const py = y / dpr;
           const dx = px - centerX;
           const dy = py - centerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
           const baseAngle = Math.atan2(dy, dx);
 
           particles.push({
@@ -81,6 +93,9 @@ export function ParticleDisintegration({
             speed: PARTICLES.dispersalRange.x + Math.random() * 80,
             drift: Math.random() * PARTICLES.dispersalRange.y,
             size: 1.2,
+            distFromCenter: dist / maxDist,
+            trail: [],
+            phaseOffset: Math.random() * Math.PI * 2,
           });
         }
       }
@@ -95,69 +110,114 @@ export function ParticleDisintegration({
     }
 
     initializedRef.current = true;
-
-    // Clear the text
     ctx.clearRect(0, 0, width, height);
   }, [text]);
 
-  const draw = useCallback(() => {
+  const draw = useCallback((time: number) => {
     const canvas = canvasRef.current;
     if (!canvas || !initializedRef.current) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const dpr = window.devicePixelRatio || 1;
     const width = window.innerWidth;
     const height = window.innerHeight;
 
-    ctx.clearRect(0, 0, width * (window.devicePixelRatio || 1), height * (window.devicePixelRatio || 1));
+    ctx.clearRect(0, 0, width * dpr, height * dpr);
 
     const particles = particlesRef.current;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const maxDist = Math.sqrt(centerX * centerX + centerY * centerY);
+    const p = progressRef.current;
+    const t = time * 0.001;
 
     ctx.save();
 
     for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
+      const pt = particles[i];
 
-      // Stagger based on distance from center
-      const dx = p.originX - centerX;
-      const dy = p.originY - centerY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const normalizedDist = dist / maxDist;
-
+      // Inverted stagger: center particles move first, edges last
+      const staggerFactor = 1 - pt.distFromCenter;
       const particleProgress = Math.max(
         0,
-        (progress - normalizedDist * 0.3) / 0.7
+        (p - (1 - staggerFactor) * 0.4) / 0.6
       );
 
       if (particleProgress <= 0) {
         // Draw at origin
         ctx.globalAlpha = 1;
         ctx.fillStyle = "white";
-        ctx.fillRect(p.originX, p.originY, p.size, p.size);
+        ctx.fillRect(pt.originX, pt.originY, pt.size, pt.size);
         continue;
       }
 
-      // Disperse using pre-computed direction
-      const dispersal = particleProgress * p.speed;
-      const x = p.originX + Math.cos(p.angle) * dispersal;
-      const y = p.originY + Math.sin(p.angle) * dispersal - particleProgress * p.drift;
+      // Base dispersal
+      const dispersal = particleProgress * pt.speed;
+      let x = pt.originX + Math.cos(pt.angle) * dispersal;
+      let y =
+        pt.originY +
+        Math.sin(pt.angle) * dispersal -
+        particleProgress * pt.drift;
+
+      // Add turbulence
+      const turb = turbulence(
+        pt.originX,
+        pt.originY,
+        t + particleProgress * 3,
+        PARTICLES.turbulenceScale,
+        PARTICLES.turbulenceStrength * particleProgress
+      );
+      x += turb.x;
+      y += turb.y;
+
+      // Update trail
+      pt.trail.push({ x, y });
+      if (pt.trail.length > PARTICLES.trailLength) {
+        pt.trail.shift();
+      }
+
+      // Size oscillation
+      const sizeBase =
+        pt.size * Math.max(PARTICLES.minSize, 1 - particleProgress);
+      const sizeOsc =
+        1 +
+        Math.sin(t * 4 + pt.phaseOffset) * PARTICLES.sizeOscillation;
+      const finalSize = sizeBase * sizeOsc;
 
       const opacity = Math.max(0, 1 - particleProgress * 1.5);
-      const size = p.size * Math.max(PARTICLES.minSize, 1 - particleProgress);
-
       if (opacity <= 0) continue;
 
+      // Draw trails (fading older positions)
+      for (let tr = 0; tr < pt.trail.length - 1; tr++) {
+        const trailOpacity = opacity * (tr / pt.trail.length) * 0.3;
+        const trailSize =
+          finalSize * (0.4 + 0.6 * (tr / pt.trail.length));
+
+        ctx.globalAlpha = trailOpacity;
+        ctx.fillStyle = "white";
+        ctx.fillRect(
+          pt.trail[tr].x,
+          pt.trail[tr].y,
+          trailSize,
+          trailSize
+        );
+      }
+
+      // Draw main particle with glow (every 4th particle)
       ctx.globalAlpha = opacity;
+      if (i % 4 === 0) {
+        ctx.shadowBlur = PARTICLES.glowRadius;
+        ctx.shadowColor = `rgba(255, 255, 255, ${opacity * 0.4})`;
+      }
       ctx.fillStyle = "white";
-      ctx.fillRect(x, y, size, size);
+      ctx.fillRect(x, y, finalSize, finalSize);
+
+      if (i % 4 === 0) {
+        ctx.shadowBlur = 0;
+      }
     }
 
     ctx.restore();
-  }, [progress]);
+  }, []);
 
   useEffect(() => {
     if (active && !initializedRef.current) {
@@ -165,11 +225,18 @@ export function ParticleDisintegration({
     }
   }, [active, initParticles]);
 
+  // Continuous rAF loop for turbulence and size oscillation
   useEffect(() => {
-    if (active) {
-      draw();
+    if (!active || !initializedRef.current) return;
+
+    function loop(time: number) {
+      draw(time);
+      rafRef.current = requestAnimationFrame(loop);
     }
-  }, [active, progress, draw]);
+    rafRef.current = requestAnimationFrame(loop);
+
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [active, draw]);
 
   if (!active) return null;
 
