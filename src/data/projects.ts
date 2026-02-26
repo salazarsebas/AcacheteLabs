@@ -1,0 +1,53 @@
+import { type Project, ProjectStatus, ProjectLayer } from "@/types/project";
+
+export const projects: Project[] = [
+  {
+    id: "faucet",
+    name: "Faucet",
+    description:
+      "Deterministic testnet funding utility for Stellar developers.",
+    repo: "https://github.com/salazarsebas/acachete-faucet",
+    liveUrl: "https://faucet-stellar.acachete.xyz/",
+    status: ProjectStatus.Active,
+    layer: ProjectLayer.Protocol,
+    category: "public-goods",
+    stack: ["Stellar SDK", "TypeScript", "Next.js"],
+    visualWeight: "standard",
+  },
+  {
+    id: "explorer",
+    name: "Explorer",
+    description: "Block-level inspection tool for Stellar network analysis.",
+    repo: "https://github.com/salazarsebas/stellar-explorer",
+    liveUrl: "https://stellar-explorer.acachete.xyz/en",
+    status: ProjectStatus.Active,
+    layer: ProjectLayer.Protocol,
+    category: "public-goods",
+    stack: ["Stellar Horizon", "React", "TypeScript"],
+    visualWeight: "standard",
+  },
+  {
+    id: "akkuea",
+    name: "Akkuea",
+    description: "Real-world asset infrastructure on Stellar.",
+    repo: "https://github.com/akkuea/akkuea",
+    liveUrl: null,
+    status: ProjectStatus.InProgress,
+    layer: ProjectLayer.Application,
+    category: "flagship",
+    stack: ["Stellar", "Soroban", "DeFi", "RWA"],
+    visualWeight: "dominant",
+  },
+  {
+    id: "promptos",
+    name: "PromptOS",
+    description: "AI infrastructure efficiency stack — the Datadog of AI.",
+    repo: "https://github.com/salazarsebas/PromptOS",
+    liveUrl: null,
+    status: ProjectStatus.Experimental,
+    layer: ProjectLayer.Infrastructure,
+    category: "infrastructure",
+    stack: ["AI/ML", "Observability", "TypeScript"],
+    visualWeight: "distinct",
+  },
+];
