@@ -1,334 +1,390 @@
 "use client";
 
-import { useRef, useLayoutEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "@/lib/gsap-config";
 import {
-  DOOR,
-  LETTER,
-  MICRO_DETAIL,
-  POST_ANIM,
   COMPACT,
   EASINGS,
+  INTRO_PREMIUM,
+  POST_ANIM,
 } from "@/lib/animation-constants";
-import { DoorLine } from "./DoorLine";
-import { LetterReveal } from "./LetterReveal";
-import { ScanOverlay } from "./ScanOverlay";
 
 interface IntroSequenceProps {
   onComplete: () => void;
   compact: boolean;
 }
 
-const INTRO_TEXT = "Acachete Labs";
+const MOBILE_BREAKPOINT = "(max-width: 640px)";
 
 export function IntroSequence({ onComplete, compact }: IntroSequenceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const seamGlowRef = useRef<HTMLDivElement>(null);
-  const charRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
-  const scanRefs = useRef<Map<number, HTMLSpanElement>>(new Map());
-  const specRef = useRef<HTMLSpanElement>(null);
-  const calibrationRef = useRef<HTMLSpanElement>(null);
-  const offsetsRef = useRef<number[]>([]);
-  const [measured, setMeasured] = useState(false);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const bloomRef = useRef<HTMLDivElement>(null);
+  const auraLeftRef = useRef<HTMLDivElement>(null);
+  const auraRightRef = useRef<HTMLDivElement>(null);
+  const irisRef = useRef<HTMLDivElement>(null);
+  const wordmarkRef = useRef<HTMLDivElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const beamRef = useRef<HTMLDivElement>(null);
+  const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [stacked, setStacked] = useState(false);
 
-  const characters = INTRO_TEXT.split("");
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_BREAKPOINT);
+    const syncStacked = () => setStacked(mediaQuery.matches);
 
-  // Measure letter positions before animation starts
-  useLayoutEffect(() => {
-    const raf = requestAnimationFrame(() => {
-      const viewportWidth = window.innerWidth;
-      const doorX = viewportWidth * 0.75;
-      const offsets: number[] = [];
+    syncStacked();
+    mediaQuery.addEventListener("change", syncStacked);
 
-      characters.forEach((_, i) => {
-        const el = charRefs.current.get(i);
-        if (!el) {
-          offsets.push(viewportWidth);
-          return;
-        }
-        const rect = el.getBoundingClientRect();
-        offsets.push(doorX - rect.left);
-      });
+    return () => mediaQuery.removeEventListener("change", syncStacked);
+  }, []);
 
-      offsetsRef.current = offsets;
-      setMeasured(true);
-    });
-
-    return () => cancelAnimationFrame(raf);
-  }, [characters]);
+  const lines = stacked ? ["Acachete", "Labs"] : ["Acachete Labs"];
 
   useGSAP(
     () => {
-      if (!measured) return;
+      const lineElements = lineRefs.current.slice(0, lines.length).filter(Boolean);
+      if (
+        !containerRef.current ||
+        !sceneRef.current ||
+        !bloomRef.current ||
+        !auraLeftRef.current ||
+        !auraRightRef.current ||
+        !irisRef.current ||
+        !wordmarkRef.current ||
+        !highlightRef.current ||
+        !beamRef.current ||
+        lineElements.length === 0
+      ) {
+        return;
+      }
+
+      const speed = compact ? INTRO_PREMIUM.compactMultiplier : 1;
+      const holdDuration = compact ? 0.16 : POST_ANIM.holdDuration;
+      const lineSpacingStart = stacked ? "0.18em" : "0.22em";
+      const lineSpacingEnd = stacked ? "0.12em" : "0.14em";
+      const exitDuration = compact
+        ? COMPACT.fadeDuration + 0.08
+        : INTRO_PREMIUM.exitDuration;
+
+      gsap.set(containerRef.current, {
+        opacity: 1,
+        background:
+          "radial-gradient(circle at 50% 34%, rgba(255,242,220,0.06), rgba(8,8,8,0.95) 48%, #020202 100%)",
+      });
+      gsap.set(sceneRef.current, {
+        opacity: compact ? 0.94 : 0.8,
+        scale: compact ? 1.01 : 1.04,
+      });
+      gsap.set([bloomRef.current, auraLeftRef.current, auraRightRef.current], {
+        opacity: 0,
+        scale: 0.9,
+      });
+      gsap.set(irisRef.current, {
+        opacity: 0,
+        clipPath: "circle(10% at 50% 50%)",
+      });
+      gsap.set(wordmarkRef.current, {
+        opacity: 1,
+      });
+      gsap.set(lineElements, {
+        opacity: 0,
+        y: 26,
+        scale: 0.985,
+        letterSpacing: lineSpacingStart,
+        transformOrigin: "50% 60%",
+      });
+      gsap.set(highlightRef.current, {
+        opacity: 0,
+        scale: 0.88,
+      });
+      gsap.set(beamRef.current, {
+        opacity: 0,
+        xPercent: -90,
+        rotate: -10,
+      });
 
       const tl = gsap.timeline({
-        onComplete: () => {
-          onComplete();
-        },
+        defaults: { ease: EASINGS.cinematic },
+        onComplete,
       });
 
-      // === Phase 1: Door panel slides open, seam glow appears ===
-      // Seam glow fades in first
-      tl.to(seamGlowRef.current, {
-        opacity: DOOR.seamGlowRest,
-        duration: DOOR.expandDuration * 0.5,
-        ease: EASINGS.cinematic,
+      tl.to(sceneRef.current, {
+        opacity: 1,
+        scale: 1,
+        duration: INTRO_PREMIUM.atmosphereDuration * speed,
       });
 
-      // Panel slides right to create a small gap
       tl.to(
-        panelRef.current,
+        irisRef.current,
         {
-          x: compact ? DOOR.restDisplace - 1 : DOOR.restDisplace,
-          duration: compact ? COMPACT.doorExpandDuration : DOOR.expandDuration,
-          ease: EASINGS.smooth,
+          opacity: 1,
+          clipPath: "circle(88% at 50% 50%)",
+          duration: INTRO_PREMIUM.apertureDuration * speed,
+          ease: "power4.out",
+        },
+        0.08
+      );
+
+      tl.to(
+        bloomRef.current,
+        {
+          opacity: compact ? 0.36 : 0.62,
+          scale: 1.06,
+          duration: 1.1 * speed,
+          ease: "power3.out",
+        },
+        0.16
+      );
+
+      tl.to(
+        [auraLeftRef.current, auraRightRef.current],
+        {
+          opacity: compact ? 0.14 : 0.26,
+          scale: 1.04,
+          duration: 1.15 * speed,
+          stagger: 0.06,
+          ease: "sine.out",
+        },
+        0.2
+      );
+
+      tl.to(
+        lineElements,
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          letterSpacing: lineSpacingEnd,
+          duration: INTRO_PREMIUM.wordmarkRiseDuration * speed,
+          stagger: INTRO_PREMIUM.lineStagger * speed,
+          ease: "power3.out",
+        },
+        0.34
+      );
+
+      tl.to(
+        highlightRef.current,
+        {
+          opacity: compact ? 0.22 : 0.38,
+          scale: 1,
+          duration: 0.42,
+          ease: "power2.out",
+        },
+        0.58
+      );
+
+      tl.to(
+        beamRef.current,
+        {
+          opacity: compact ? 0.3 : 0.48,
+          xPercent: 96,
+          duration: compact ? 0.62 : 0.9,
+          ease: "power2.inOut",
+        },
+        0.76
+      );
+
+      tl.to(
+        beamRef.current,
+        {
+          opacity: 0,
+          duration: 0.22,
+          ease: EASINGS.exit,
+        },
+        "-=0.12"
+      );
+
+      tl.to(
+        highlightRef.current,
+        {
+          opacity: compact ? 0.14 : 0.24,
+          duration: 0.24,
+          ease: EASINGS.exit,
         },
         "<"
       );
 
-      // === Phase 2: Letters emerge one by one ===
-      const stagger = compact ? COMPACT.stagger : LETTER.stagger;
-      const slideDuration = compact
-        ? COMPACT.slideDuration
-        : LETTER.slideDuration;
+      tl.to({}, { duration: holdDuration });
 
-      characters.forEach((char, i) => {
-        const charEl = charRefs.current.get(i);
-        const scanEl = scanRefs.current.get(i);
-        if (!charEl) return;
+      tl.to(
+        wordmarkRef.current,
+        {
+          opacity: 0,
+          y: compact ? -8 : -16,
+          scale: 0.985,
+          duration: exitDuration,
+          ease: "power2.inOut",
+        },
+        ">"
+      );
 
-        const offset = offsetsRef.current[i] ?? window.innerWidth;
-        const letterStart = `>${i === 0 ? "0" : stagger}`;
+      tl.to(
+        [highlightRef.current, bloomRef.current, auraLeftRef.current, auraRightRef.current],
+        {
+          opacity: 0,
+          scale: 1.08,
+          duration: exitDuration,
+          ease: EASINGS.exit,
+        },
+        "<"
+      );
 
-        // Skip space character animation (just reveal it)
-        if (char === " ") {
-          tl.set(charEl, { opacity: 1 }, letterStart);
-          return;
-        }
-
-        if (!compact) {
-          // Step 1: Position letter at door threshold, hidden via clipPath
-          tl.set(
-            charEl,
-            {
-              x: offset,
-              opacity: 1,
-              clipPath: "inset(0 0 100% 0)",
-            },
-            letterStart
-          );
-
-          // Step 2: Door opens wider — panel slides further right
-          tl.to(
-            panelRef.current,
-            {
-              x: DOOR.openDisplace,
-              duration: 0.12,
-              ease: EASINGS.cinematic,
-            },
-            "<"
-          );
-          tl.to(
-            seamGlowRef.current,
-            {
-              opacity: DOOR.seamGlowOpen,
-              duration: 0.12,
-              ease: EASINGS.cinematic,
-            },
-            "<"
-          );
-
-          // Step 3: Vertical scan — line moves top to bottom + clipPath reveals letter
-          if (scanEl) {
-            tl.fromTo(
-              scanEl,
-              { top: "0%", opacity: 0.8 },
-              {
-                top: "100%",
-                opacity: 0.2,
-                duration: LETTER.scanDuration,
-                ease: "power1.inOut",
-              },
-              "<+0.06"
-            );
-          }
-          tl.to(
-            charEl,
-            {
-              clipPath: "inset(0 0 0% 0)",
-              duration: LETTER.scanDuration,
-              ease: "power1.inOut",
-            },
-            "<"
-          );
-
-          // Step 4: Glow flash on letter (starts halfway through scan)
-          tl.fromTo(
-            charEl,
-            { textShadow: "0 0 10px rgba(255,255,255,0.2)" },
-            {
-              textShadow: "0 0 0px rgba(255,255,255,0)",
-              duration: LETTER.glowDuration,
-              ease: EASINGS.exit,
-            },
-            `<+${LETTER.scanDuration * 0.5}`
-          );
-
-          // Step 5: Fade out scan line
-          if (scanEl) {
-            tl.to(
-              scanEl,
-              { opacity: 0, duration: 0.1, ease: EASINGS.exit },
-              "<"
-            );
-          }
-
-          // Step 6: Deliberate pause — letter is scanned, visible at threshold
-          tl.to({}, { duration: LETTER.scanToSlideDelay });
-
-          // Step 7: Letter slides to its final position
-          tl.to(charEl, {
-            x: 0,
-            duration: slideDuration,
-            ease: LETTER.slideEase,
-          });
-
-          // Step 8: Door closes back — panel returns to rest position
-          tl.to(
-            panelRef.current,
-            {
-              x: DOOR.restDisplace,
-              duration: 0.18,
-              ease: EASINGS.exit,
-            },
-            "<+0.08"
-          );
-          tl.to(
-            seamGlowRef.current,
-            {
-              opacity: DOOR.seamGlowRest,
-              duration: 0.18,
-              ease: EASINGS.exit,
-            },
-            "<"
-          );
-
-          // Micro-detail overlays at specific letters
-          if (i === 2 && specRef.current) {
-            tl.fromTo(
-              specRef.current,
-              { opacity: 0 },
-              {
-                opacity: 1,
-                duration: MICRO_DETAIL.fadeDuration,
-                ease: EASINGS.cinematic,
-              },
-              "<-0.3"
-            ).to(
-              specRef.current,
-              {
-                opacity: 0,
-                duration: MICRO_DETAIL.fadeDuration,
-                ease: EASINGS.exit,
-              },
-              `>+${MICRO_DETAIL.displayDuration}`
-            );
-          }
-
-          if (i === 9 && calibrationRef.current) {
-            tl.fromTo(
-              calibrationRef.current,
-              { opacity: 0 },
-              {
-                opacity: 1,
-                duration: MICRO_DETAIL.fadeDuration,
-                ease: EASINGS.cinematic,
-              },
-              "<-0.3"
-            ).to(
-              calibrationRef.current,
-              {
-                opacity: 0,
-                duration: MICRO_DETAIL.fadeDuration,
-                ease: EASINGS.exit,
-              },
-              `>+${MICRO_DETAIL.displayDuration}`
-            );
-          }
-        } else {
-          // Compact mode: simple slide, no scan, no door pulse
-          tl.set(charEl, { x: offset, opacity: 1 }, letterStart);
-          tl.to(charEl, {
-            x: 0,
-            duration: slideDuration,
-            ease: LETTER.slideEase,
-          });
-        }
-      });
-
-      // === Phase 3: Hold (silence) — full mode only ===
-      if (!compact) {
-        tl.to({}, { duration: POST_ANIM.holdDuration });
-      }
-
-      // === Phase 4: Door closes fully + container fades out ===
-      if (!compact) {
-        // Panel slides back to closed position
-        tl.to(
-          panelRef.current,
-          {
-            x: 0,
-            duration: 0.5,
-            ease: EASINGS.smooth,
-          },
-          ">-0.1"
-        );
-        // Seam glow fades
-        tl.to(
-          seamGlowRef.current,
-          {
-            opacity: 0,
-            duration: 0.4,
-            ease: EASINGS.exit,
-          },
-          "<"
-        );
-      }
+      tl.to(
+        sceneRef.current,
+        {
+          opacity: 0,
+          scale: 1.03,
+          duration: exitDuration,
+          ease: EASINGS.exit,
+        },
+        "<"
+      );
 
       tl.to(
         containerRef.current,
         {
           opacity: 0,
-          duration: compact ? COMPACT.fadeDuration : 0.5,
+          duration: compact ? COMPACT.fadeDuration : 0.42,
           ease: EASINGS.exit,
         },
-        compact ? ">" : ">-0.3"
+        "-=0.12"
       );
     },
-    { scope: containerRef, dependencies: [measured, compact] }
+    { scope: containerRef, dependencies: [compact, stacked] }
   );
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50"
-      style={{ backgroundColor: "#0B0B0B" }}
+      className="fixed inset-0 z-50 overflow-hidden"
       role="status"
-      aria-label="Loading laboratory"
+      aria-label="Loading Acachete Labs"
     >
-      <DoorLine panelRef={panelRef} seamGlowRef={seamGlowRef} />
+      <div className="absolute inset-0 bg-[#020202]" aria-hidden="true" />
 
-      <LetterReveal
-        text={INTRO_TEXT}
-        charRefs={charRefs}
-        scanRefs={scanRefs}
+      <div
+        ref={sceneRef}
+        className="absolute inset-0"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 42%, rgba(255, 238, 208, 0.08), transparent 26%), radial-gradient(circle at 50% 52%, rgba(184, 218, 255, 0.06), transparent 40%), linear-gradient(180deg, rgba(10,10,10,0.16), rgba(2,2,2,0.97) 76%)",
+        }}
       />
 
-      {!compact && (
-        <ScanOverlay specRef={specRef} calibrationRef={calibrationRef} />
-      )}
+      <div
+        ref={bloomRef}
+        className="absolute left-1/2 top-1/2 h-[46vw] w-[46vw] min-h-[18rem] min-w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,244,224,0.24) 0%, rgba(240,200,141,0.14) 24%, rgba(130,180,255,0.08) 46%, rgba(0,0,0,0) 72%)",
+          filter: "blur(28px)",
+        }}
+      />
+
+      <div
+        ref={auraLeftRef}
+        className="absolute left-[2vw] top-[18vh] h-[22vw] w-[22vw] min-h-[10rem] min-w-[10rem] rounded-full"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(193,226,255,0.12) 0%, rgba(193,226,255,0.02) 64%, rgba(0,0,0,0) 78%)",
+          filter: "blur(16px)",
+        }}
+      />
+
+      <div
+        ref={auraRightRef}
+        className="absolute bottom-[14vh] right-[3vw] h-[20vw] w-[20vw] min-h-[9rem] min-w-[9rem] rounded-full"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,223,176,0.1) 0%, rgba(255,223,176,0.02) 60%, rgba(0,0,0,0) 78%)",
+          filter: "blur(16px)",
+        }}
+      />
+
+      <div
+        ref={irisRef}
+        className="absolute inset-0"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.035), rgba(255,255,255,0) 34%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18))",
+        }}
+      />
+
+      <div className="absolute inset-0 flex items-center justify-center px-6 sm:px-12">
+        <div className="relative flex w-full max-w-[78rem] items-center justify-center">
+          <div
+            ref={wordmarkRef}
+            className="relative max-w-full overflow-visible px-4 py-8 text-center sm:px-8"
+          >
+            <div
+              ref={highlightRef}
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[78%] w-[112%] -translate-x-1/2 -translate-y-1/2 rounded-[999px]"
+              aria-hidden="true"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(255,244,224,0.18) 0%, rgba(255,244,224,0.06) 42%, rgba(0,0,0,0) 74%)",
+                filter: "blur(22px)",
+              }}
+            />
+
+            <div
+              ref={beamRef}
+              className="pointer-events-none absolute inset-y-[-12%] left-[-20%] w-[20%]"
+              aria-hidden="true"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,246,227,0.85) 48%, rgba(255,255,255,0) 100%)",
+                filter: "blur(10px)",
+                mixBlendMode: "screen",
+              }}
+            />
+
+            <div
+              className={`intro-premium-wordmark flex flex-col items-center ${
+                stacked ? "gap-2 sm:gap-3" : "gap-0"
+              }`}
+            >
+              {lines.map((line, index) => (
+                <span
+                  key={line}
+                  ref={(node) => {
+                    lineRefs.current[index] = node;
+                  }}
+                  className="intro-premium-line block whitespace-nowrap"
+                  style={{
+                    fontSize: stacked
+                      ? index === 0
+                        ? "clamp(3.05rem, 13vw, 5.7rem)"
+                        : "clamp(2.65rem, 10.4vw, 4.8rem)"
+                      : "clamp(3.35rem, 8.8vw, 7.4rem)",
+                    color: "rgba(252, 247, 240, 0.98)",
+                    textShadow:
+                      "0 1px 0 rgba(255,255,255,0.08), 0 12px 38px rgba(0,0,0,0.46)",
+                  }}
+                >
+                  {line}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(0,0,0,0.76) 0%, rgba(0,0,0,0.08) 24%, rgba(0,0,0,0.08) 76%, rgba(0,0,0,0.84) 100%)",
+        }}
+      />
     </div>
   );
 }

@@ -30,6 +30,16 @@ export const POST_ANIM = {
   hubInitialScale: 1.08,
 } as const;
 
+export const INTRO_PREMIUM = {
+  apertureDuration: 1.2,
+  wordmarkRiseDuration: 1.05,
+  lineStagger: 0.16,
+  glintDuration: 0.9,
+  atmosphereDuration: 1.6,
+  exitDuration: 0.72,
+  compactMultiplier: 0.58,
+} as const;
+
 // === INTRO: Compact (Return Visit) ===
 export const COMPACT = {
   doorExpandDuration: 0.2,

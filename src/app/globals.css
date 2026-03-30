@@ -25,6 +25,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.intro-premium-wordmark {
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "URW Palladio L", "Book Antiqua",
+    Georgia, serif;
+  font-weight: 600;
+  line-height: 0.88;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.intro-premium-line {
+  color: rgba(252, 247, 240, 0.98);
+  -webkit-text-fill-color: currentColor;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
