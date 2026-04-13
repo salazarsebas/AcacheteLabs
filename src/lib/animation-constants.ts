@@ -31,13 +31,14 @@ export const POST_ANIM = {
 } as const;
 
 export const INTRO_PREMIUM = {
-  apertureDuration: 1.2,
-  wordmarkRiseDuration: 1.05,
-  lineStagger: 0.16,
-  glintDuration: 0.9,
-  atmosphereDuration: 1.6,
-  exitDuration: 0.72,
-  compactMultiplier: 0.58,
+  atmosphereDuration: 1.1,
+  ghostDuration: 1.3,
+  letterRevealDuration: 0.82,
+  letterStagger: 0.065,
+  settleDuration: 0.26,
+  glintDuration: 0.72,
+  holdDuration: 0.44,
+  releaseDuration: 0.68,
 } as const;
 
 // === INTRO: Compact (Return Visit) ===

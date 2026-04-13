@@ -6,27 +6,19 @@ import { IntroSequence } from "@/components/intro/IntroSequence";
 import { Hub } from "./Hub";
 
 export function IntroHubOrchestrator() {
-  const { introComplete, isReturnVisit, isReplaying, completeIntro, replayIntro } =
+  const { introComplete, isReplaying, completeIntro, replayIntro } =
     useIntroState();
   const prefersReducedMotion = useReducedMotion();
 
   const skipEntirely = prefersReducedMotion;
-
-  // During replay, always use full (non-compact) animation
   const showIntro = !skipEntirely && (!introComplete || isReplaying);
-  const isCompact = isReturnVisit && !isReplaying;
-
   const revealMode: "instant" | "quick" | "cinematic" = skipEntirely
     ? "instant"
-    : isCompact
-      ? "quick"
-      : "cinematic";
+    : "cinematic";
 
   return (
     <>
-      {showIntro && (
-        <IntroSequence onComplete={completeIntro} compact={isCompact} />
-      )}
+      {showIntro && <IntroSequence onComplete={completeIntro} />}
       <Hub
         visible={skipEntirely || (introComplete && !isReplaying)}
         revealMode={revealMode}

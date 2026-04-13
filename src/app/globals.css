@@ -25,22 +25,37 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.intro-premium-wordmark {
-  font-family:
-    "Iowan Old Style", "Palatino Linotype", "URW Palladio L", "Book Antiqua",
-    Georgia, serif;
-  font-weight: 600;
-  line-height: 0.88;
+.intro-cinematic-wordmark {
+  font-family: var(--font-geist-sans), "Neue Haas Grotesk Display", sans-serif;
+  font-weight: 400;
+  line-height: 0.9;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   text-wrap: balance;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  text-rendering: geometricPrecision;
 }
 
-.intro-premium-line {
-  color: rgba(252, 247, 240, 0.98);
-  -webkit-text-fill-color: currentColor;
+.intro-cinematic-char {
+  display: inline-block;
+  color: rgba(255, 249, 240, 0.98);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 252, 246, 0.98) 0%,
+      rgba(239, 230, 214, 0.98) 42%,
+      rgba(195, 212, 231, 0.9) 100%
+    );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow:
+    0 0 14px rgba(255, 231, 191, 0.12),
+    0 0 24px rgba(160, 198, 236, 0.08),
+    0 12px 24px rgba(0, 0, 0, 0.34);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
 }
 
 @media (prefers-reduced-motion: reduce) {

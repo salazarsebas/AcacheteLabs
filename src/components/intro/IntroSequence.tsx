@@ -3,31 +3,39 @@
 import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "@/lib/gsap-config";
-import {
-  COMPACT,
-  EASINGS,
-  INTRO_PREMIUM,
-  POST_ANIM,
-} from "@/lib/animation-constants";
 
 interface IntroSequenceProps {
   onComplete: () => void;
-  compact: boolean;
+}
+
+interface CharMeta {
+  key: string;
+  char: string;
 }
 
 const MOBILE_BREAKPOINT = "(max-width: 640px)";
 
-export function IntroSequence({ onComplete, compact }: IntroSequenceProps) {
+const TIMINGS = {
+  atmosphere: 1.4,
+  aperture: 1.6,
+  horizon: 1,
+  charReveal: 0.92,
+  charStagger: 0.07,
+  glint: 0.78,
+  hold: 2.2,
+  exit: 0.88,
+} as const;
+
+export function IntroSequence({ onComplete }: IntroSequenceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const bloomRef = useRef<HTMLDivElement>(null);
-  const auraLeftRef = useRef<HTMLDivElement>(null);
-  const auraRightRef = useRef<HTMLDivElement>(null);
-  const irisRef = useRef<HTMLDivElement>(null);
+  const veilRef = useRef<HTMLDivElement>(null);
+  const haloRef = useRef<HTMLDivElement>(null);
+  const apertureRef = useRef<HTMLDivElement>(null);
+  const horizonRef = useRef<HTMLDivElement>(null);
   const wordmarkRef = useRef<HTMLDivElement>(null);
-  const highlightRef = useRef<HTMLDivElement>(null);
-  const beamRef = useRef<HTMLDivElement>(null);
-  const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const sheenRef = useRef<HTMLDivElement>(null);
+  const charRefs = useRef<Map<string, HTMLSpanElement>>(new Map());
   const [stacked, setStacked] = useState(false);
 
   useEffect(() => {
@@ -41,350 +49,354 @@ export function IntroSequence({ onComplete, compact }: IntroSequenceProps) {
   }, []);
 
   const lines = stacked ? ["Acachete", "Labs"] : ["Acachete Labs"];
+  const lineChars: CharMeta[][] = lines.map((line, lineIndex) =>
+    line.split("").map((char, charIndex) => ({
+      key: `${lineIndex}-${charIndex}`,
+      char,
+    }))
+  );
 
   useGSAP(
     () => {
-      const lineElements = lineRefs.current.slice(0, lines.length).filter(Boolean);
+      const characters = lineChars
+        .flat()
+        .map(({ key, char }) => ({
+          char,
+          element: charRefs.current.get(key) ?? null,
+        }))
+        .filter(
+          (entry): entry is { char: string; element: HTMLSpanElement } =>
+            entry.char !== " " && entry.element !== null
+        );
+
       if (
         !containerRef.current ||
         !sceneRef.current ||
-        !bloomRef.current ||
-        !auraLeftRef.current ||
-        !auraRightRef.current ||
-        !irisRef.current ||
+        !veilRef.current ||
+        !haloRef.current ||
+        !apertureRef.current ||
+        !horizonRef.current ||
         !wordmarkRef.current ||
-        !highlightRef.current ||
-        !beamRef.current ||
-        lineElements.length === 0
+        !sheenRef.current ||
+        characters.length === 0
       ) {
         return;
       }
 
-      const speed = compact ? INTRO_PREMIUM.compactMultiplier : 1;
-      const holdDuration = compact ? 0.16 : POST_ANIM.holdDuration;
-      const lineSpacingStart = stacked ? "0.18em" : "0.22em";
-      const lineSpacingEnd = stacked ? "0.12em" : "0.14em";
-      const exitDuration = compact
-        ? COMPACT.fadeDuration + 0.08
-        : INTRO_PREMIUM.exitDuration;
-
-      gsap.set(containerRef.current, {
-        opacity: 1,
-        background:
-          "radial-gradient(circle at 50% 34%, rgba(255,242,220,0.06), rgba(8,8,8,0.95) 48%, #020202 100%)",
-      });
+      gsap.set(containerRef.current, { opacity: 1 });
       gsap.set(sceneRef.current, {
-        opacity: compact ? 0.94 : 0.8,
-        scale: compact ? 1.01 : 1.04,
-      });
-      gsap.set([bloomRef.current, auraLeftRef.current, auraRightRef.current], {
         opacity: 0,
-        scale: 0.9,
+        scale: 1.04,
       });
-      gsap.set(irisRef.current, {
+      gsap.set(veilRef.current, {
         opacity: 0,
-        clipPath: "circle(10% at 50% 50%)",
       });
-      gsap.set(wordmarkRef.current, {
-        opacity: 1,
-      });
-      gsap.set(lineElements, {
-        opacity: 0,
-        y: 26,
-        scale: 0.985,
-        letterSpacing: lineSpacingStart,
-        transformOrigin: "50% 60%",
-      });
-      gsap.set(highlightRef.current, {
+      gsap.set(haloRef.current, {
         opacity: 0,
         scale: 0.88,
       });
-      gsap.set(beamRef.current, {
+      gsap.set(apertureRef.current, {
         opacity: 0,
-        xPercent: -90,
-        rotate: -10,
+        scale: 0.92,
+      });
+      gsap.set(horizonRef.current, {
+        opacity: 0,
+        scaleX: 0.32,
+        transformOrigin: "50% 50%",
+      });
+      gsap.set(wordmarkRef.current, {
+        opacity: 1,
+        y: 18,
+        scale: 1.025,
+      });
+      gsap.set(sheenRef.current, {
+        opacity: 0,
+        xPercent: -120,
       });
 
-      const tl = gsap.timeline({
-        defaults: { ease: EASINGS.cinematic },
+      const totalCharacters = characters.length;
+      characters.forEach((entry, index) => {
+        const progress = totalCharacters === 1 ? 0.5 : index / (totalCharacters - 1);
+        const centerBias = Math.abs(progress - 0.5);
+
+        gsap.set(entry.element, {
+          opacity: 0,
+          y: 70 - centerBias * 14,
+          z: -120 + centerBias * 36,
+          rotateX: -64,
+          rotateY: (progress - 0.5) * 12,
+          scale: 0.84,
+          filter: "blur(8px)",
+          transformOrigin: "50% 100%",
+          force3D: true,
+        });
+      });
+
+      const timeline = gsap.timeline({
+        defaults: { ease: "power3.out" },
         onComplete,
       });
 
-      tl.to(sceneRef.current, {
+      timeline.to(sceneRef.current, {
         opacity: 1,
         scale: 1,
-        duration: INTRO_PREMIUM.atmosphereDuration * speed,
+        duration: TIMINGS.atmosphere,
       });
 
-      tl.to(
-        irisRef.current,
+      timeline.to(
+        veilRef.current,
         {
           opacity: 1,
-          clipPath: "circle(88% at 50% 50%)",
-          duration: INTRO_PREMIUM.apertureDuration * speed,
-          ease: "power4.out",
+          duration: TIMINGS.atmosphere,
         },
         0.08
       );
 
-      tl.to(
-        bloomRef.current,
+      timeline.to(
+        haloRef.current,
         {
-          opacity: compact ? 0.36 : 0.62,
-          scale: 1.06,
-          duration: 1.1 * speed,
-          ease: "power3.out",
-        },
-        0.16
-      );
-
-      tl.to(
-        [auraLeftRef.current, auraRightRef.current],
-        {
-          opacity: compact ? 0.14 : 0.26,
-          scale: 1.04,
-          duration: 1.15 * speed,
-          stagger: 0.06,
-          ease: "sine.out",
+          opacity: 0.82,
+          scale: 1,
+          duration: TIMINGS.atmosphere,
+          ease: "power2.out",
         },
         0.2
       );
 
-      tl.to(
-        lineElements,
+      timeline.to(
+        apertureRef.current,
         {
-          opacity: 1,
-          y: 0,
+          opacity: 0.7,
           scale: 1,
-          letterSpacing: lineSpacingEnd,
-          duration: INTRO_PREMIUM.wordmarkRiseDuration * speed,
-          stagger: INTRO_PREMIUM.lineStagger * speed,
-          ease: "power3.out",
+          duration: TIMINGS.aperture,
+          ease: "power2.out",
         },
         0.34
       );
 
-      tl.to(
-        highlightRef.current,
+      timeline.to(
+        horizonRef.current,
         {
-          opacity: compact ? 0.22 : 0.38,
-          scale: 1,
-          duration: 0.42,
+          opacity: 0.8,
+          scaleX: 1,
+          duration: TIMINGS.horizon,
           ease: "power2.out",
         },
-        0.58
+        0.54
       );
 
-      tl.to(
-        beamRef.current,
-        {
-          opacity: compact ? 0.3 : 0.48,
-          xPercent: 96,
-          duration: compact ? 0.62 : 0.9,
-          ease: "power2.inOut",
-        },
-        0.76
-      );
-
-      tl.to(
-        beamRef.current,
-        {
-          opacity: 0,
-          duration: 0.22,
-          ease: EASINGS.exit,
-        },
-        "-=0.12"
-      );
-
-      tl.to(
-        highlightRef.current,
-        {
-          opacity: compact ? 0.14 : 0.24,
-          duration: 0.24,
-          ease: EASINGS.exit,
-        },
-        "<"
-      );
-
-      tl.to({}, { duration: holdDuration });
-
-      tl.to(
+      timeline.to(
         wordmarkRef.current,
         {
+          y: 0,
+          scale: 1,
+          duration: 1.1,
+        },
+        0.9
+      );
+
+      characters.forEach((entry, index) => {
+        timeline.to(
+          entry.element,
+          {
+            opacity: 1,
+            y: 0,
+            z: 0,
+            rotateX: 0,
+            rotateY: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: TIMINGS.charReveal,
+            ease: "power4.out",
+          },
+          1.12 + index * TIMINGS.charStagger
+        );
+      });
+
+      timeline.to(
+        sheenRef.current,
+        {
+          opacity: 0.9,
+          xPercent: 120,
+          duration: TIMINGS.glint,
+          ease: "power2.inOut",
+        },
+        2.58
+      );
+
+      timeline.to(
+        sheenRef.current,
+        {
           opacity: 0,
-          y: compact ? -8 : -16,
-          scale: 0.985,
-          duration: exitDuration,
+          duration: 0.2,
+          ease: "power1.out",
+        },
+        3.08
+      );
+
+      timeline.to({}, { duration: TIMINGS.hold });
+
+      timeline.to(
+        [veilRef.current, haloRef.current, apertureRef.current, horizonRef.current],
+        {
+          opacity: 0,
+          duration: TIMINGS.exit,
           ease: "power2.inOut",
         },
         ">"
       );
 
-      tl.to(
-        [highlightRef.current, bloomRef.current, auraLeftRef.current, auraRightRef.current],
+      timeline.to(
+        wordmarkRef.current,
         {
           opacity: 0,
-          scale: 1.08,
-          duration: exitDuration,
-          ease: EASINGS.exit,
+          y: -14,
+          scale: 0.985,
+          duration: TIMINGS.exit,
+          ease: "power2.inOut",
         },
         "<"
       );
 
-      tl.to(
+      timeline.to(
         sceneRef.current,
         {
           opacity: 0,
-          scale: 1.03,
-          duration: exitDuration,
-          ease: EASINGS.exit,
+          scale: 1.02,
+          duration: TIMINGS.exit,
+          ease: "power2.inOut",
         },
         "<"
       );
 
-      tl.to(
+      timeline.to(
         containerRef.current,
         {
           opacity: 0,
-          duration: compact ? COMPACT.fadeDuration : 0.42,
-          ease: EASINGS.exit,
+          duration: 0.26,
+          ease: "power1.out",
         },
-        "-=0.12"
+        "-=0.16"
       );
     },
-    { scope: containerRef, dependencies: [compact, stacked] }
+    { scope: containerRef, dependencies: [stacked] }
   );
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-50 overflow-hidden"
+      className="fixed inset-0 z-50 overflow-hidden bg-[#040404]"
       role="status"
       aria-label="Loading Acachete Labs"
     >
-      <div className="absolute inset-0 bg-[#020202]" aria-hidden="true" />
+      <div ref={sceneRef} className="absolute inset-0" aria-hidden="true">
+        <div className="absolute inset-0 bg-[#040404]" />
 
-      <div
-        ref={sceneRef}
-        className="absolute inset-0"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 42%, rgba(255, 238, 208, 0.08), transparent 26%), radial-gradient(circle at 50% 52%, rgba(184, 218, 255, 0.06), transparent 40%), linear-gradient(180deg, rgba(10,10,10,0.16), rgba(2,2,2,0.97) 76%)",
-        }}
-      />
+        <div
+          ref={veilRef}
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 44%, rgba(255,246,230,0.08) 0%, rgba(73,86,108,0.06) 26%, rgba(4,4,5,0) 62%)",
+          }}
+        />
 
-      <div
-        ref={bloomRef}
-        className="absolute left-1/2 top-1/2 h-[46vw] w-[46vw] min-h-[18rem] min-w-[18rem] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(255,244,224,0.24) 0%, rgba(240,200,141,0.14) 24%, rgba(130,180,255,0.08) 46%, rgba(0,0,0,0) 72%)",
-          filter: "blur(28px)",
-        }}
-      />
+        <div
+          ref={haloRef}
+          className="absolute left-1/2 top-1/2 h-[44rem] w-[44rem] max-h-[95vw] max-w-[95vw] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(255,239,214,0.16) 0%, rgba(166,195,230,0.08) 38%, rgba(0,0,0,0) 74%)",
+            filter: "blur(30px)",
+          }}
+        />
 
-      <div
-        ref={auraLeftRef}
-        className="absolute left-[2vw] top-[18vh] h-[22vw] w-[22vw] min-h-[10rem] min-w-[10rem] rounded-full"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(193,226,255,0.12) 0%, rgba(193,226,255,0.02) 64%, rgba(0,0,0,0) 78%)",
-          filter: "blur(16px)",
-        }}
-      />
+        <div className="absolute inset-0 flex items-center justify-center px-6 sm:px-10">
+          <div
+            ref={apertureRef}
+            className="h-[min(68vw,31rem)] w-[min(68vw,31rem)] rounded-full border border-white/10 sm:h-[min(52vw,34rem)] sm:w-[min(52vw,34rem)]"
+            style={{
+              boxShadow:
+                "0 0 0 1px rgba(255,255,255,0.03) inset, 0 0 34px rgba(235,212,174,0.08)",
+            }}
+          />
+        </div>
 
-      <div
-        ref={auraRightRef}
-        className="absolute bottom-[14vh] right-[3vw] h-[20vw] w-[20vw] min-h-[9rem] min-w-[9rem] rounded-full"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(255,223,176,0.1) 0%, rgba(255,223,176,0.02) 60%, rgba(0,0,0,0) 78%)",
-          filter: "blur(16px)",
-        }}
-      />
-
-      <div
-        ref={irisRef}
-        className="absolute inset-0"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.035), rgba(255,255,255,0) 34%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18))",
-        }}
-      />
-
-      <div className="absolute inset-0 flex items-center justify-center px-6 sm:px-12">
-        <div className="relative flex w-full max-w-[78rem] items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center px-6 sm:px-10">
           <div
             ref={wordmarkRef}
-            className="relative max-w-full overflow-visible px-4 py-8 text-center sm:px-8"
+            className="relative max-w-full px-2 text-center [perspective:1600px]"
           >
             <div
-              ref={highlightRef}
-              className="pointer-events-none absolute left-1/2 top-1/2 h-[78%] w-[112%] -translate-x-1/2 -translate-y-1/2 rounded-[999px]"
-              aria-hidden="true"
+              ref={sheenRef}
+              className="pointer-events-none absolute inset-y-[-18%] left-[-14%] w-[14%]"
               style={{
                 background:
-                  "radial-gradient(circle, rgba(255,244,224,0.18) 0%, rgba(255,244,224,0.06) 42%, rgba(0,0,0,0) 74%)",
-                filter: "blur(22px)",
-              }}
-            />
-
-            <div
-              ref={beamRef}
-              className="pointer-events-none absolute inset-y-[-12%] left-[-20%] w-[20%]"
-              aria-hidden="true"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,246,227,0.85) 48%, rgba(255,255,255,0) 100%)",
+                  "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,249,238,0.92) 50%, rgba(255,255,255,0) 100%)",
                 filter: "blur(10px)",
                 mixBlendMode: "screen",
               }}
             />
 
             <div
-              className={`intro-premium-wordmark flex flex-col items-center ${
-                stacked ? "gap-2 sm:gap-3" : "gap-0"
+              className={`intro-cinematic-wordmark flex flex-col items-center ${
+                stacked ? "gap-1" : "gap-0"
               }`}
             >
-              {lines.map((line, index) => (
-                <span
-                  key={line}
-                  ref={(node) => {
-                    lineRefs.current[index] = node;
-                  }}
-                  className="intro-premium-line block whitespace-nowrap"
-                  style={{
-                    fontSize: stacked
-                      ? index === 0
-                        ? "clamp(3.05rem, 13vw, 5.7rem)"
-                        : "clamp(2.65rem, 10.4vw, 4.8rem)"
-                      : "clamp(3.35rem, 8.8vw, 7.4rem)",
-                    color: "rgba(252, 247, 240, 0.98)",
-                    textShadow:
-                      "0 1px 0 rgba(255,255,255,0.08), 0 12px 38px rgba(0,0,0,0.46)",
-                  }}
+              {lineChars.map((chars, lineIndex) => (
+                <div
+                  key={`line-${lineIndex}`}
+                  className="flex flex-wrap justify-center whitespace-nowrap"
                 >
-                  {line}
-                </span>
+                  {chars.map(({ key, char }) => (
+                    <span
+                      key={key}
+                      ref={(node) => {
+                        if (node) charRefs.current.set(key, node);
+                        else charRefs.current.delete(key);
+                      }}
+                      className={`intro-cinematic-char ${
+                        char === " " ? "w-[0.36em]" : ""
+                      }`}
+                      style={{
+                        fontSize: stacked
+                          ? lineIndex === 0
+                            ? "clamp(3.45rem, 14vw, 6.2rem)"
+                            : "clamp(3rem, 11.2vw, 5.15rem)"
+                          : "clamp(4rem, 9vw, 8.1rem)",
+                        marginRight: char === " " ? "0.055em" : "0.01em",
+                      }}
+                    >
+                      {char === " " ? "\u00A0" : char}
+                    </span>
+                  ))}
+                </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
 
-      <div
-        className="pointer-events-none absolute inset-0"
-        aria-hidden="true"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0.76) 0%, rgba(0,0,0,0.08) 24%, rgba(0,0,0,0.08) 76%, rgba(0,0,0,0.84) 100%)",
-        }}
-      />
+        <div className="absolute inset-0 flex items-center justify-center px-6 sm:px-10">
+          <div
+            ref={horizonRef}
+            className="h-px w-[min(70rem,82vw)]"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,236,204,0.24) 18%, rgba(194,220,248,0.38) 50%, rgba(255,236,204,0.24) 82%, rgba(255,255,255,0) 100%)",
+              boxShadow:
+                "0 0 18px rgba(186,219,255,0.16), 0 0 30px rgba(255,223,173,0.08)",
+            }}
+          />
+        </div>
+
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.18) 52%, rgba(0,0,0,0.86) 100%)",
+          }}
+        />
+      </div>
     </div>
   );
 }
