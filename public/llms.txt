@@ -1,0 +1,52 @@
+# Acachete Labs
+
+> Acachete Labs is a research-grade software laboratory founded by Sebastián Salazar. We build protocol utilities, real-world asset infrastructure, and AI systems on the Stellar blockchain and beyond.
+
+## About
+
+Acachete Labs is an independent software laboratory focused on building high-quality, production-grade infrastructure for the Stellar ecosystem and the broader web3/AI space. The lab operates at the intersection of protocol engineering, decentralized finance, real-world asset tokenization, and artificial intelligence.
+
+**Founder:** Sebastián Salazar (GitHub: salazarsebas)
+**Website:** https://acachete.xyz
+**Domain focus:** Stellar blockchain, Soroban smart contracts, DeFi, RWA, AI systems
+
+## Projects
+
+### Faucet
+- **Status:** Active
+- **Category:** Protocol Utility
+- **Description:** Deterministic testnet funding utility for Stellar developers. Provides reliable, reproducible access to testnet XLM for development and testing workflows.
+- **Live:** https://faucet-stellar.acachete.xyz/
+- **Repo:** https://github.com/salazarsebas/acachete-faucet
+- **Stack:** Stellar SDK, TypeScript, Next.js
+
+### Stellar Explorer
+- **Status:** Active
+- **Category:** Protocol Utility
+- **Description:** Block-level inspection tool for Stellar network analysis. Enables deep inspection of transactions, accounts, and operations on the Stellar network.
+- **Live:** https://stellar-explorer.acachete.xyz/en
+- **Repo:** https://github.com/salazarsebas/stellar-explorer
+- **Stack:** Stellar Horizon API, React, TypeScript
+
+### Akkuea
+- **Status:** In Progress
+- **Category:** Flagship / Real-World Asset Infrastructure
+- **Description:** Real-world asset infrastructure built on Stellar. A platform for tokenizing and managing real-world assets using Soroban smart contracts and DeFi primitives.
+- **Repo:** https://github.com/akkuea/akkuea
+- **Stack:** Stellar, Soroban, DeFi, RWA
+
+### PromptOS
+- **Status:** Experimental
+- **Category:** AI Infrastructure
+- **Description:** AI infrastructure efficiency stack described as "the Datadog of AI". An observability and efficiency layer for AI systems and LLM pipelines.
+- **Repo:** https://github.com/salazarsebas/PromptOS
+- **Stack:** AI/ML, Observability, TypeScript
+
+## What is Acachete Labs?
+
+Acachete Labs answers the question: who builds the plumbing that makes Stellar useful? The lab fills gaps in developer tooling, infrastructure, and protocol-level utilities that the ecosystem needs but rarely prioritizes. Each project is designed to be durable, composable, and production-grade.
+
+## Contact
+
+GitHub: https://github.com/salazarsebas
+Website: https://acachete.xyz
