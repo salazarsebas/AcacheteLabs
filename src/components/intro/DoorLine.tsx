@@ -10,7 +10,7 @@ interface DoorLineProps {
 export function DoorLine({ panelRef, seamGlowRef }: DoorLineProps) {
   return (
     <>
-      {/* The seam glow — fixed at the door position, revealed when panel slides */}
+      {/* seam glow: fixed at the door position, revealed when panel slides */}
       <div
         ref={seamGlowRef}
         className="fixed top-0 z-30 h-screen"
@@ -26,7 +26,7 @@ export function DoorLine({ panelRef, seamGlowRef }: DoorLineProps) {
         aria-hidden="true"
       />
 
-      {/* The door panel — covers right 25% of viewport, slides right to open */}
+      {/* door panel: covers right 25% of viewport, slides right to open */}
       <div
         ref={panelRef}
         className="fixed top-0 z-30 h-screen"
@@ -38,7 +38,7 @@ export function DoorLine({ panelRef, seamGlowRef }: DoorLineProps) {
         }}
         aria-hidden="true"
       >
-        {/* Panel left edge — the seam line, always visible */}
+        {/* panel left edge: the seam line, always visible */}
         <div
           className="absolute left-0 top-0 h-full"
           style={{

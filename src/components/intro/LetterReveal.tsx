@@ -52,7 +52,7 @@ export function LetterReveal({ text, charRefs, scanRefs }: LetterRevealProps) {
             >
               {char === " " ? "\u00A0" : char}
             </span>
-            {/* Vertical scan line — horizontal bar that moves top to bottom */}
+            {/* vertical scan line: horizontal bar that moves top to bottom */}
             <span
               ref={setScanRef(i)}
               className="pointer-events-none absolute left-0 h-[1px] w-full bg-white"

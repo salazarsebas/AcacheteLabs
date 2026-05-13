@@ -41,7 +41,7 @@ export const projects: Project[] = [
   {
     id: "promptos",
     name: "PromptOS",
-    description: "AI infrastructure efficiency stack — the Datadog of AI.",
+    description: "AI infrastructure efficiency stack: the Datadog of AI.",
     repo: "https://github.com/salazarsebas/PromptOS",
     liveUrl: null,
     status: ProjectStatus.Experimental,
