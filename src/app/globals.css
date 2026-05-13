@@ -8,7 +8,7 @@
   --color-text-primary: rgba(255, 255, 255, 0.9);
   --color-text-secondary: rgba(255, 255, 255, 0.5);
   --color-text-muted: rgba(255, 255, 255, 0.2);
-  --color-border-module: rgba(255, 255, 255, 0.1);
+  --color-border-module: rgba(255, 255, 255, 0.08);
   --color-border-hover: rgba(255, 255, 255, 0.2);
 
   --font-sans: var(--font-geist-sans);
@@ -23,6 +23,7 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 .intro-cinematic-wordmark {
