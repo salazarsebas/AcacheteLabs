@@ -236,34 +236,72 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
 
       timeline.to({}, { duration: TIMINGS.hold });
 
+      // exit: each element has its own personality
       timeline.to(
-        [veilRef.current, haloRef.current, apertureRef.current, horizonRef.current],
+        horizonRef.current,
         {
           opacity: 0,
-          duration: TIMINGS.exit,
-          ease: "power2.inOut",
+          scaleX: 0,
+          duration: TIMINGS.exit * 0.88,
+          ease: "power3.inOut",
+          transformOrigin: "50% 50%",
         },
         ">"
       );
 
       timeline.to(
-        wordmarkRef.current,
+        apertureRef.current,
         {
           opacity: 0,
-          y: -14,
-          scale: 0.985,
-          duration: TIMINGS.exit,
+          scale: 0.84,
+          duration: TIMINGS.exit * 0.88,
           ease: "power2.inOut",
         },
         "<"
       );
 
       timeline.to(
+        veilRef.current,
+        {
+          opacity: 0,
+          duration: TIMINGS.exit * 0.88,
+          ease: "power2.inOut",
+        },
+        "<"
+      );
+
+      // halo bleeds out: expands as it fades
+      timeline.to(
+        haloRef.current,
+        {
+          opacity: 0,
+          scale: 1.18,
+          duration: TIMINGS.exit * 1.1,
+          ease: "power1.out",
+        },
+        "<"
+      );
+
+      // wordmark: camera pull-back with rack-focus blur
+      timeline.to(
+        wordmarkRef.current,
+        {
+          opacity: 0,
+          scale: 0.91,
+          filter: "blur(6px)",
+          duration: TIMINGS.exit * 1.1,
+          ease: "power3.inOut",
+        },
+        "<"
+      );
+
+      // scene: recedes with the wordmark
+      timeline.to(
         sceneRef.current,
         {
           opacity: 0,
-          scale: 1.02,
-          duration: TIMINGS.exit,
+          scale: 0.96,
+          duration: TIMINGS.exit * 1.1,
           ease: "power2.inOut",
         },
         "<"
@@ -273,10 +311,10 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
         containerRef.current,
         {
           opacity: 0,
-          duration: 0.26,
+          duration: 0.28,
           ease: "power1.out",
         },
-        "-=0.16"
+        "-=0.14"
       );
     },
     { scope: containerRef, dependencies: [stacked] }
