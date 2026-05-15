@@ -148,12 +148,12 @@ export const ProjectSlide = forwardRef<HTMLDivElement, ProjectSlideProps>(
                   href={project.repo}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-text-muted transition-colors duration-300 hover:text-text-primary"
+                  className="group flex items-center gap-2 rounded-sm border border-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-text-muted transition-all duration-200 hover:border-white/25 hover:bg-white/[0.04] hover:text-text-primary"
                   aria-label={`${project.name} source code repository`}
                 >
                   <span>Repo</span>
                   <span
-                    className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     aria-hidden="true"
                   >
                     ↗
@@ -165,13 +165,16 @@ export const ProjectSlide = forwardRef<HTMLDivElement, ProjectSlideProps>(
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] transition-colors duration-300"
-                  style={{ color: accentText }}
+                  className="group flex items-center gap-2 rounded-sm border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.25em] transition-all duration-200 hover:bg-white/[0.04]"
+                  style={{
+                    color: accentText,
+                    borderColor: accentBorder,
+                  }}
                   aria-label={`${project.name} live application`}
                 >
                   <span>Live</span>
                   <span
-                    className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     aria-hidden="true"
                   >
                     ↗
