@@ -40,19 +40,7 @@ export function Hub({ visible, revealMode, onReplay }: HubProps) {
       style={{ transformOrigin: "center top" }}
     >
       <HeroSection visible={visible} />
-      <ProjectsScroll projects={projects} />
-
-      {onReplay && (
-        <div className="flex justify-center py-24">
-          <button
-            onClick={onReplay}
-            className="font-mono text-[9px] uppercase tracking-[0.3em] text-text-muted transition-opacity duration-300 hover:text-text-secondary"
-            aria-label="Replay intro animation"
-          >
-            Replay sequence
-          </button>
-        </div>
-      )}
+      <ProjectsScroll projects={projects} onReplay={onReplay} />
     </motion.div>
   );
 }
