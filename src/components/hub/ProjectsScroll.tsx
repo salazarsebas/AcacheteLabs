@@ -8,9 +8,10 @@ import type { Project } from "@/types/project";
 
 interface ProjectsScrollProps {
   projects: Project[];
+  onReplay?: () => void;
 }
 
-export function ProjectsScroll({ projects }: ProjectsScrollProps) {
+export function ProjectsScroll({ projects, onReplay }: ProjectsScrollProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const dotRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -28,7 +29,6 @@ export function ProjectsScroll({ projects }: ProjectsScrollProps) {
 
       const totalSlides = slides.length;
 
-      // Initial state
       slides.forEach((slide, i) => {
         gsap.set(slide, {
           opacity: i === 0 ? 1 : 0,
@@ -98,8 +98,8 @@ export function ProjectsScroll({ projects }: ProjectsScrollProps) {
       className="relative"
     >
       <div className="sticky top-0 h-screen overflow-hidden">
-        {/* Section header */}
-        <div className="absolute left-6 top-8 z-10 flex items-center gap-4 md:left-16 lg:left-24">
+        {/* Section header — spaced below the fixed main header (~60px) */}
+        <div className="absolute left-6 top-[72px] z-10 flex items-center gap-4 md:left-16 lg:left-24">
           <span className="font-mono text-[9px] uppercase tracking-[0.35em] text-text-muted">
             Projects
           </span>
@@ -145,6 +145,19 @@ export function ProjectsScroll({ projects }: ProjectsScrollProps) {
             />
           ))}
         </div>
+
+        {/* Replay button — inside sticky viewport so it never requires extra scroll */}
+        {onReplay && (
+          <div className="absolute bottom-10 left-6 md:left-16 lg:left-24">
+            <button
+              onClick={onReplay}
+              className="font-mono text-[9px] uppercase tracking-[0.3em] text-text-muted transition-colors duration-300 hover:text-text-secondary"
+              aria-label="Replay intro animation"
+            >
+              Replay sequence
+            </button>
+          </div>
+        )}
 
         {/* Bottom edge fade */}
         <div
