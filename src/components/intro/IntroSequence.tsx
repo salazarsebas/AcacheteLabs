@@ -35,8 +35,18 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
   const horizonRef = useRef<HTMLDivElement>(null);
   const wordmarkRef = useRef<HTMLDivElement>(null);
   const sheenRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
   const charRefs = useRef<Map<string, HTMLSpanElement>>(new Map());
   const [stacked, setStacked] = useState(false);
+
+  // Lock scroll for the duration of the intro
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_BREAKPOINT);
@@ -78,41 +88,25 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
         !horizonRef.current ||
         !wordmarkRef.current ||
         !sheenRef.current ||
+        !progressRef.current ||
         characters.length === 0
       ) {
         return;
       }
 
       gsap.set(containerRef.current, { opacity: 1 });
-      gsap.set(sceneRef.current, {
-        opacity: 0,
-        scale: 1.04,
-      });
-      gsap.set(veilRef.current, {
-        opacity: 0,
-      });
-      gsap.set(haloRef.current, {
-        opacity: 0,
-        scale: 0.88,
-      });
-      gsap.set(apertureRef.current, {
-        opacity: 0,
-        scale: 0.92,
-      });
+      gsap.set(sceneRef.current, { opacity: 0, scale: 1.04 });
+      gsap.set(veilRef.current, { opacity: 0 });
+      gsap.set(haloRef.current, { opacity: 0, scale: 0.88 });
+      gsap.set(apertureRef.current, { opacity: 0, scale: 0.92 });
       gsap.set(horizonRef.current, {
         opacity: 0,
         scaleX: 0.32,
         transformOrigin: "50% 50%",
       });
-      gsap.set(wordmarkRef.current, {
-        opacity: 1,
-        y: 18,
-        scale: 1.025,
-      });
-      gsap.set(sheenRef.current, {
-        opacity: 0,
-        xPercent: -120,
-      });
+      gsap.set(wordmarkRef.current, { opacity: 1, y: 18, scale: 1.025 });
+      gsap.set(sheenRef.current, { opacity: 0, xPercent: -120 });
+      gsap.set(progressRef.current, { scaleX: 0, transformOrigin: "0% 50%" });
 
       const totalCharacters = characters.length;
       characters.forEach((entry, index) => {
@@ -132,9 +126,11 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
         });
       });
 
+      // Build timeline paused so we can read its duration for the progress bar
       const timeline = gsap.timeline({
         defaults: { ease: "power3.out" },
         onComplete,
+        paused: true,
       });
 
       timeline.to(sceneRef.current, {
@@ -145,53 +141,31 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
 
       timeline.to(
         veilRef.current,
-        {
-          opacity: 1,
-          duration: TIMINGS.atmosphere,
-        },
+        { opacity: 1, duration: TIMINGS.atmosphere },
         0.08
       );
 
       timeline.to(
         haloRef.current,
-        {
-          opacity: 0.82,
-          scale: 1,
-          duration: TIMINGS.atmosphere,
-          ease: "power2.out",
-        },
+        { opacity: 0.82, scale: 1, duration: TIMINGS.atmosphere, ease: "power2.out" },
         0.2
       );
 
       timeline.to(
         apertureRef.current,
-        {
-          opacity: 0.7,
-          scale: 1,
-          duration: TIMINGS.aperture,
-          ease: "power2.out",
-        },
+        { opacity: 0.7, scale: 1, duration: TIMINGS.aperture, ease: "power2.out" },
         0.34
       );
 
       timeline.to(
         horizonRef.current,
-        {
-          opacity: 0.8,
-          scaleX: 1,
-          duration: TIMINGS.horizon,
-          ease: "power2.out",
-        },
+        { opacity: 0.8, scaleX: 1, duration: TIMINGS.horizon, ease: "power2.out" },
         0.54
       );
 
       timeline.to(
         wordmarkRef.current,
-        {
-          y: 0,
-          scale: 1,
-          duration: 1.1,
-        },
+        { y: 0, scale: 1, duration: 1.1 },
         0.9
       );
 
@@ -215,22 +189,13 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
 
       timeline.to(
         sheenRef.current,
-        {
-          opacity: 0.9,
-          xPercent: 120,
-          duration: TIMINGS.glint,
-          ease: "power2.inOut",
-        },
+        { opacity: 0.9, xPercent: 120, duration: TIMINGS.glint, ease: "power2.inOut" },
         2.58
       );
 
       timeline.to(
         sheenRef.current,
-        {
-          opacity: 0,
-          duration: 0.2,
-          ease: "power1.out",
-        },
+        { opacity: 0, duration: 0.2, ease: "power1.out" },
         3.08
       );
 
@@ -239,83 +204,57 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
       // exit: each element has its own personality
       timeline.to(
         horizonRef.current,
-        {
-          opacity: 0,
-          scaleX: 0,
-          duration: TIMINGS.exit * 0.88,
-          ease: "power3.inOut",
-          transformOrigin: "50% 50%",
-        },
+        { opacity: 0, scaleX: 0, duration: TIMINGS.exit * 0.88, ease: "power3.inOut", transformOrigin: "50% 50%" },
         ">"
       );
 
       timeline.to(
         apertureRef.current,
-        {
-          opacity: 0,
-          scale: 0.84,
-          duration: TIMINGS.exit * 0.88,
-          ease: "power2.inOut",
-        },
+        { opacity: 0, scale: 0.84, duration: TIMINGS.exit * 0.88, ease: "power2.inOut" },
         "<"
       );
 
       timeline.to(
         veilRef.current,
-        {
-          opacity: 0,
-          duration: TIMINGS.exit * 0.88,
-          ease: "power2.inOut",
-        },
+        { opacity: 0, duration: TIMINGS.exit * 0.88, ease: "power2.inOut" },
         "<"
       );
 
       // halo bleeds out: expands as it fades
       timeline.to(
         haloRef.current,
-        {
-          opacity: 0,
-          scale: 1.18,
-          duration: TIMINGS.exit * 1.1,
-          ease: "power1.out",
-        },
+        { opacity: 0, scale: 1.18, duration: TIMINGS.exit * 1.1, ease: "power1.out" },
         "<"
       );
 
       // wordmark: camera pull-back with rack-focus blur
       timeline.to(
         wordmarkRef.current,
-        {
-          opacity: 0,
-          scale: 0.91,
-          filter: "blur(6px)",
-          duration: TIMINGS.exit * 1.1,
-          ease: "power3.inOut",
-        },
+        { opacity: 0, scale: 0.91, filter: "blur(6px)", duration: TIMINGS.exit * 1.1, ease: "power3.inOut" },
         "<"
       );
 
       // scene: recedes with the wordmark
       timeline.to(
         sceneRef.current,
-        {
-          opacity: 0,
-          scale: 0.96,
-          duration: TIMINGS.exit * 1.1,
-          ease: "power2.inOut",
-        },
+        { opacity: 0, scale: 0.96, duration: TIMINGS.exit * 1.1, ease: "power2.inOut" },
         "<"
       );
 
       timeline.to(
         containerRef.current,
-        {
-          opacity: 0,
-          duration: 0.28,
-          ease: "power1.out",
-        },
+        { opacity: 0, duration: 0.28, ease: "power1.out" },
         "-=0.14"
       );
+
+      // Progress bar spans the full timeline duration (linear fill)
+      timeline.to(
+        progressRef.current,
+        { scaleX: 1, ease: "none", duration: timeline.duration() },
+        0
+      );
+
+      timeline.play();
     },
     { scope: containerRef, dependencies: [stacked] }
   );
@@ -405,7 +344,7 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
                         marginRight: char === " " ? "0.055em" : "0.01em",
                       }}
                     >
-                      {char === " " ? "\u00A0" : char}
+                      {char === " " ? " " : char}
                     </span>
                   ))}
                 </div>
@@ -435,6 +374,14 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
           }}
         />
       </div>
+
+      {/* Progress bar: fills left-to-right over the full intro duration */}
+      <div
+        ref={progressRef}
+        className="absolute bottom-0 left-0 h-px w-full"
+        style={{ background: "rgba(255,255,255,0.18)" }}
+        aria-hidden="true"
+      />
     </div>
   );
 }
