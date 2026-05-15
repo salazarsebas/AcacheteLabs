@@ -36,6 +36,7 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
   const wordmarkRef = useRef<HTMLDivElement>(null);
   const sheenRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
+  const countdownRef = useRef<HTMLSpanElement>(null);
   const charRefs = useRef<Map<string, HTMLSpanElement>>(new Map());
   const [stacked, setStacked] = useState(false);
 
@@ -247,12 +248,32 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
         "-=0.14"
       );
 
-      // Progress bar spans the full timeline duration (linear fill)
+      // Capture total duration once before adding meta tweens
+      const totalDur = timeline.duration();
+
+      // Progress bar: linear fill left-to-right
       timeline.to(
         progressRef.current,
-        { scaleX: 1, ease: "none", duration: timeline.duration() },
+        { scaleX: 1, ease: "none", duration: totalDur },
         0
       );
+
+      // Countdown: proxy object counts down from totalDur → 0
+      const proxy = { val: totalDur };
+      if (countdownRef.current) {
+        countdownRef.current.textContent = `${Math.ceil(totalDur)}s`;
+      }
+      timeline.to(proxy, {
+        val: 0,
+        ease: "none",
+        duration: totalDur,
+        onUpdate: () => {
+          if (countdownRef.current) {
+            const remaining = Math.ceil(proxy.val);
+            countdownRef.current.textContent = remaining > 0 ? `${remaining}s` : "";
+          }
+        },
+      }, 0);
 
       timeline.play();
     },
@@ -375,13 +396,25 @@ export function IntroSequence({ onComplete }: IntroSequenceProps) {
         />
       </div>
 
-      {/* Progress bar: fills left-to-right over the full intro duration */}
-      <div
-        ref={progressRef}
-        className="absolute bottom-0 left-0 h-px w-full"
-        style={{ background: "rgba(255,255,255,0.18)" }}
-        aria-hidden="true"
-      />
+      {/* Bottom HUD: countdown + progress bar */}
+      <div className="absolute bottom-0 left-0 right-0" aria-hidden="true">
+        <div className="flex justify-end px-6 pb-2.5 md:px-10">
+          <span
+            ref={countdownRef}
+            className="font-mono tabular-nums"
+            style={{ fontSize: "22px", color: "rgba(255,255,255,0.55)", letterSpacing: "0.05em" }}
+          />
+        </div>
+        <div
+          ref={progressRef}
+          className="h-px w-full"
+          style={{
+            background: "rgba(255,255,255,0.2)",
+            transformOrigin: "0% 50%",
+            transform: "scaleX(0)",
+          }}
+        />
+      </div>
     </div>
   );
 }
